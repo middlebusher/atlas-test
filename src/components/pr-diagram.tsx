@@ -591,10 +591,10 @@ export function PrDiagram({
 
     simulation.on("tick", () => {
       link
-        .attr("x1", (d) => (d.source as GraphNode).x!)
-        .attr("y1", (d) => (d.source as GraphNode).y!)
-        .attr("x2", (d) => (d.target as GraphNode).x!)
-        .attr("y2", (d) => (d.target as GraphNode).y!);
+        .attr("x1", (d) => (d.source as unknown as GraphNode).x!)
+        .attr("y1", (d) => (d.source as unknown as GraphNode).y!)
+        .attr("x2", (d) => (d.target as unknown as GraphNode).x!)
+        .attr("y2", (d) => (d.target as unknown as GraphNode).y!);
       node.attr("transform", (d) => `translate(${d.x},${d.y})`);
     });
 
