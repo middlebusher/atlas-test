@@ -641,25 +641,30 @@ export function PrDiagram({
   return (
     <div className="flex h-full flex-col">
       {/* Header — shows the FOCUSED PR, not necessarily the primary */}
-      <div className="flex items-center justify-between border-b border-border px-5 py-3.5">
-        <div className="flex flex-col gap-1">
-          <h2 className="text-sm font-medium text-text-primary">{focusedPr?.title ?? pr.title}</h2>
-          <div className="flex items-center gap-2">
-            <span className="font-mono text-[10px] text-text-muted">{focusedPr?.repo ?? pr.repo}#{focusedPr?.number ?? pr.number}</span>
-            <span className="text-[10px] text-text-muted">·</span>
-            <span className="text-[10px] text-text-muted">{focusedPr?.files.length ?? pr.files.length} files</span>
-            <span className="text-[10px] text-text-muted">·</span>
-            <span className="font-mono text-[10px] text-[#3fb950]">+{focusedPr?.additions ?? pr.additions}</span>
-            <span className="font-mono text-[10px] text-[#e55353]">-{focusedPr?.deletions ?? pr.deletions}</span>
-            {related.length > 0 && (
-              <>
-                <span className="text-[10px] text-text-muted">·</span>
-                <span className="text-[10px] text-text-muted">{related.length} related PR{related.length > 1 ? "s" : ""}</span>
-              </>
-            )}
+      <div className="border-b border-border px-5 py-3.5">
+        <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-1">
+            <h2 className="text-sm font-medium text-text-primary">{focusedPr?.title ?? pr.title}</h2>
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-[10px] text-text-muted">{focusedPr?.repo ?? pr.repo}#{focusedPr?.number ?? pr.number}</span>
+              <span className="text-[10px] text-text-muted">·</span>
+              <span className="text-[10px] text-text-muted">{focusedPr?.files.length ?? pr.files.length} files</span>
+              <span className="text-[10px] text-text-muted">·</span>
+              <span className="font-mono text-[10px] text-[#3fb950]">+{focusedPr?.additions ?? pr.additions}</span>
+              <span className="font-mono text-[10px] text-[#e55353]">-{focusedPr?.deletions ?? pr.deletions}</span>
+              {related.length > 0 && (
+                <>
+                  <span className="text-[10px] text-text-muted">·</span>
+                  <span className="text-[10px] text-text-muted">{related.length} related PR{related.length > 1 ? "s" : ""}</span>
+                </>
+              )}
+            </div>
           </div>
+          <span className="shrink-0 font-mono text-[9px] uppercase tracking-wider text-text-muted">File Graph</span>
         </div>
-        <span className="font-mono text-[9px] uppercase tracking-wider text-text-muted">File Graph</span>
+        <p className="mt-2 text-[11px] leading-relaxed text-text-secondary">
+          {focusedPr?.summary ?? pr.summary}
+        </p>
       </div>
 
       {/* Diagram + detail panel */}

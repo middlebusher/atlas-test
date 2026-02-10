@@ -19,6 +19,7 @@ export interface PullRequest {
   labels: { name: string; color: string }[];
   updatedAt: string;
   branch: string;
+  summary: string;
   files: FileChange[];
 }
 
@@ -38,6 +39,7 @@ export const pullRequests: PullRequest[] = [
     labels: [{ name: "feature", color: "#5b8def" }],
     updatedAt: "12m ago",
     branch: "feat/streaming-agent",
+    summary: "Adds streaming response support to agent API endpoints using server-sent events. Introduces a new StreamEncoder for chunked transfer, updates the agent handler to support both streaming and batch modes, and wires up the feature flag in config.",
     files: [
       { path: "src/api/agent/stream.ts", additions: 142, deletions: 0 },
       { path: "src/api/agent/handler.ts", additions: 67, deletions: 12 },
@@ -63,6 +65,7 @@ export const pullRequests: PullRequest[] = [
     labels: [{ name: "bug", color: "#e55353" }],
     updatedAt: "34m ago",
     branch: "fix/webhook-race",
+    summary: "Fixes a race condition where concurrent webhook events could be processed out of order. Adds a distributed lock around the event queue and improves retry logic to prevent duplicate processing of GitHub push events.",
     files: [
       { path: "src/webhooks/github/processor.ts", additions: 22, deletions: 18 },
       { path: "src/webhooks/github/queue.ts", additions: 15, deletions: 12 },
@@ -85,6 +88,7 @@ export const pullRequests: PullRequest[] = [
     labels: [{ name: "refactor", color: "#a855f7" }],
     updatedAt: "1h ago",
     branch: "refactor/server-components",
+    summary: "Migrates all dashboard components from client-side rendering to Next.js server components. Removes the useDashboard hook in favor of direct data fetching, simplifies the component tree, and reduces the client JS bundle by ~40%. Skeleton loading states added for streaming.",
     files: [
       { path: "src/app/dashboard/page.tsx", additions: 89, deletions: 156 },
       { path: "src/app/dashboard/layout.tsx", additions: 34, deletions: 67 },
@@ -116,6 +120,7 @@ export const pullRequests: PullRequest[] = [
     labels: [{ name: "dependencies", color: "#555555" }],
     updatedAt: "2h ago",
     branch: "deps/openai-sdk",
+    summary: "Bumps the OpenAI SDK from v5.1.0 to v5.2.0. Includes minor bug fixes in the streaming API client and adds support for the new structured output format. No breaking changes.",
     files: [
       { path: "package.json", additions: 1, deletions: 1 },
       { path: "package-lock.json", additions: 11, deletions: 11 },
@@ -136,6 +141,7 @@ export const pullRequests: PullRequest[] = [
     labels: [{ name: "feature", color: "#5b8def" }],
     updatedAt: "3h ago",
     branch: "feat/pr-timeline",
+    summary: "Implements a visual timeline view for pull requests showing commits, reviews, and comments in chronological order. Each commit node links to its diff, and review comments are rendered inline with diff annotations for context.",
     files: [
       { path: "src/app/pr/[id]/timeline/page.tsx", additions: 134, deletions: 0 },
       { path: "src/components/pr/timeline.tsx", additions: 98, deletions: 0 },
@@ -161,6 +167,7 @@ export const pullRequests: PullRequest[] = [
     labels: [{ name: "bug", color: "#e55353" }, { name: "gitlab", color: "#e2773e" }],
     updatedAt: "4h ago",
     branch: "fix/gitlab-empty-diff",
+    summary: "Handles edge cases where GitLab merge request webhooks send empty or null diff payloads. Adds validation in the parser to gracefully skip empty diffs instead of throwing, and extends the shared validator to normalize missing fields.",
     files: [
       { path: "src/webhooks/gitlab/parser.ts", additions: 12, deletions: 3 },
       { path: "src/webhooks/gitlab/types.ts", additions: 5, deletions: 0 },
@@ -182,6 +189,7 @@ export const pullRequests: PullRequest[] = [
     labels: [{ name: "docs", color: "#3fb950" }],
     updatedAt: "5h ago",
     branch: "docs/k8s-deploy",
+    summary: "Rewrites the self-hosted Kubernetes deployment guide with updated Helm chart values, prerequisite versions (kubectl v1.28+, Docker 24.0+), and a new troubleshooting section covering common ingress and certificate issues.",
     files: [
       { path: "docs/self-hosted/kubernetes.md", additions: 89, deletions: 34 },
       { path: "docs/self-hosted/helm-values.md", additions: 45, deletions: 12 },
@@ -204,6 +212,7 @@ export const pullRequests: PullRequest[] = [
     labels: [{ name: "feature", color: "#5b8def" }, { name: "wip", color: "#888888" }],
     updatedAt: "6h ago",
     branch: "feat/custom-instructions",
+    summary: "WIP: Adds the ability for repository owners to define custom review instructions via a .coderabbit.yaml file. Introduces a parser, validator, and settings API endpoint. Database migration adds an instructions column to the repos table.",
     files: [
       { path: "src/review/instructions/parser.ts", additions: 67, deletions: 0 },
       { path: "src/review/instructions/types.ts", additions: 34, deletions: 0 },
@@ -227,6 +236,7 @@ export const pullRequests: PullRequest[] = [
     labels: [{ name: "bug", color: "#e55353" }, { name: "a11y", color: "#d2a8ff" }],
     updatedAt: "8h ago",
     branch: "fix/dark-mode-contrast",
+    summary: "Fixes WCAG AA contrast issues on the settings page in dark mode. Updates design tokens for background/foreground pairs, adjusts the theme toggle component, and ensures all text meets the 4.5:1 minimum contrast ratio.",
     files: [
       { path: "src/app/settings/page.tsx", additions: 12, deletions: 8 },
       { path: "src/components/settings/theme-toggle.tsx", additions: 8, deletions: 6 },
@@ -249,6 +259,7 @@ export const pullRequests: PullRequest[] = [
     labels: [{ name: "performance", color: "#f0883e" }],
     updatedAt: "12h ago",
     branch: "perf/batch-queries",
+    summary: "Optimizes the review generation pipeline by batching sequential database queries into bulk operations. Reduces average review generation time by ~60% for large PRs. Refactors the connection pool to support batch prepared statements.",
     files: [
       { path: "src/review/pipeline/generator.ts", additions: 45, deletions: 89 },
       { path: "src/review/pipeline/batch.ts", additions: 67, deletions: 0 },
@@ -272,6 +283,7 @@ export const pullRequests: PullRequest[] = [
     labels: [{ name: "docs", color: "#3fb950" }],
     updatedAt: "1d ago",
     branch: "docs/rate-limits",
+    summary: "Documents the API rate limiting policy including per-endpoint limits, burst allowances, and retry-after headers. Updates the authentication docs to clarify token scoping and adds rate limit examples to the API overview.",
     files: [
       { path: "docs/api/rate-limiting.md", additions: 67, deletions: 0 },
       { path: "docs/api/authentication.md", additions: 12, deletions: 8 },
@@ -293,6 +305,7 @@ export const pullRequests: PullRequest[] = [
     labels: [{ name: "test", color: "#7ee787" }],
     updatedAt: "1d ago",
     branch: "test/gh-app-install",
+    summary: "Adds end-to-end integration tests for the GitHub App installation flow covering install, suspend, unsuspend, and uninstall events. Sets up a mock GitHub server, shared test fixtures, and helper utilities for webhook payload generation.",
     files: [
       { path: "tests/integration/github/app-install.test.ts", additions: 134, deletions: 0 },
       { path: "tests/integration/github/fixtures.ts", additions: 56, deletions: 0 },
