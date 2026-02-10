@@ -523,7 +523,7 @@ export function PrDiagram({
       .force("link", d3.forceLink<GraphNode, GraphLink>(graph.links).id((d) => d.id).distance((d) => {
         const l = d as GraphLink;
         if (l.isRelationship) return 180;
-        const target = d.target as GraphNode;
+        const target = d.target as unknown as GraphNode;
         if (target.isPrHub) return 120;
         return target.isFile ? 80 : 60;
       }))
