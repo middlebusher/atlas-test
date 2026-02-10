@@ -224,6 +224,7 @@ function NodeDetailPanel({ node, focusedPr, allNodes, onClose }: {
             <div className="flex justify-between"><span className="text-text-muted">Author</span><span className="text-text-secondary">{relPr.author}</span></div>
             <div className="flex justify-between"><span className="text-text-muted">Branch</span><span className="font-mono text-text-secondary">{relPr.branch}</span></div>
             <div className="flex justify-between"><span className="text-text-muted">Updated</span><span className="text-text-secondary">{relPr.updatedAt}</span></div>
+            <div className="flex justify-between"><span className="text-text-muted">PR</span><a href={`https://github.com/${relPr.repo}/pull/${relPr.number}`} target="_blank" rel="noopener noreferrer" className="truncate pl-4 font-mono text-[#F04006] hover:underline">#{relPr.number} on GitHub</a></div>
           </div>
         </div>
       </div>
@@ -286,6 +287,7 @@ function NodeDetailPanel({ node, focusedPr, allNodes, onClose }: {
               <div className="flex justify-between"><span className="text-text-muted">Path</span><span className="truncate pl-4 font-mono text-text-secondary">{node.id.replace(/^rel:\d+:/, "")}</span></div>
               <div className="flex justify-between"><span className="text-text-muted">Language</span><span className="font-mono text-text-secondary">{extToLang(node.name.split(".").pop() ?? "")}</span></div>
               <div className="flex justify-between"><span className="text-text-muted">Net change</span><span className={`font-mono ${node.additions >= node.deletions ? "text-[#3fb950]" : "text-[#e55353]"}`}>{node.additions >= node.deletions ? "+" : ""}{node.additions - node.deletions} lines</span></div>
+              <div className="flex justify-between"><span className="text-text-muted">PR</span><a href={`https://github.com/${displayPr.repo}/pull/${displayPr.number}`} target="_blank" rel="noopener noreferrer" className="truncate pl-4 font-mono text-[#F04006] hover:underline">#{displayPr.number}</a></div>
             </div>
           </div>
         ) : (
@@ -316,6 +318,7 @@ function NodeDetailPanel({ node, focusedPr, allNodes, onClose }: {
               <h3 className="mb-1 font-mono text-[10px] font-semibold uppercase tracking-[0.15em] text-text-muted">Summary</h3>
               <div className="flex justify-between"><span className="text-text-muted">Files changed</span><span className="font-mono text-text-secondary">{childFiles.length}</span></div>
               <div className="flex justify-between"><span className="text-text-muted">Net change</span><span className={`font-mono ${node.additions >= node.deletions ? "text-[#3fb950]" : "text-[#e55353]"}`}>{node.additions >= node.deletions ? "+" : ""}{node.additions - node.deletions} lines</span></div>
+              <div className="flex justify-between"><span className="text-text-muted">PR</span><a href={`https://github.com/${displayPr.repo}/pull/${displayPr.number}`} target="_blank" rel="noopener noreferrer" className="truncate pl-4 font-mono text-[#F04006] hover:underline">#{displayPr.number}</a></div>
             </div>
           </div>
         )}
@@ -333,7 +336,25 @@ function applyFocusStyling(
   focusId: number,
   sizeScale: d3.ScalePower<number, number>,
   repoName: string,
+  linkSelection?: d3.Selection<SVGLineElement, GraphLink, SVGGElement, unknown>,
 ) {
+  // Update links based on focus
+  if (linkSelection) {
+    linkSelection.each(function (d) {
+      const line = d3.select(this);
+      const src = d.source as unknown as GraphNode;
+      const tgt = d.target as unknown as GraphNode;
+      const isFocused = src.prId === focusId && tgt.prId === focusId;
+      if (d.isRelationship) {
+        line.attr("stroke", "var(--text-secondary)").attr("stroke-opacity", 0.8);
+      } else if (isFocused) {
+        line.attr("stroke", "#FDFCFD").attr("stroke-opacity", 0.85);
+      } else {
+        line.attr("stroke", "#444444").attr("stroke-opacity", 0.35);
+      }
+    });
+  }
+
   // Update all rects
   nodeSelection.each(function (d) {
     const g = d3.select(this);
@@ -342,27 +363,27 @@ function applyFocusStyling(
     if (d.isPrHub) {
       // Hub styling
       g.select("rect")
-        .attr("stroke", isFocused ? "var(--text-secondary)" : "var(--text-muted)")
+        .attr("stroke", isFocused ? "var(--text-primary)" : "var(--text-secondary)")
         .attr("stroke-width", isFocused ? 1.5 : 1)
-        .attr("fill", isFocused ? "var(--bg-card-hover)" : "var(--bg-card)");
-      g.selectAll("text").attr("fill-opacity", isFocused ? 1 : 0.6);
+        .attr("fill", isFocused ? "#2a2a2a" : "#1e1e1e");
+      g.selectAll("text").attr("fill-opacity", isFocused ? 1 : 0.8);
     } else if (d.isFile) {
       const sz = sizeScale(d.additions + d.deletions);
       const total = d.additions + d.deletions;
       const ratio = total > 0 ? d.additions / total : 0;
 
       if (isFocused) {
-        // Full size, full color
+        // Full size, bright color
         g.select("rect")
           .attr("width", sz * 2).attr("height", sz * 2)
           .attr("x", -sz).attr("y", -sz)
           .attr("fill", () => {
-            if (total === 0) return "var(--border)";
+            if (total === 0) return "#333333";
             return ratio > 0.5 ? d3.interpolateRgb("#e5535340", "#3fb95040")((ratio - 0.5) * 2) : d3.interpolateRgb("#e5535340", "#e5535320")(ratio * 2);
           })
           .attr("fill-opacity", 1)
           .attr("stroke", () => {
-            if (total === 0) return "var(--border)";
+            if (total === 0) return "#555555";
             return ratio > 0.5 ? d3.interpolateRgb("#e55353", "#3fb950")((ratio - 0.5) * 2) : "#e55353";
           })
           .attr("stroke-width", 1).attr("stroke-opacity", 0.6);
@@ -371,25 +392,25 @@ function applyFocusStyling(
         g.select("rect")
           .attr("width", sz * 1.4).attr("height", sz * 1.4)
           .attr("x", -sz * 0.7).attr("y", -sz * 0.7)
-          .attr("fill", "var(--border)")
-          .attr("fill-opacity", 0.3)
-          .attr("stroke", "var(--text-muted)")
-          .attr("stroke-width", 1).attr("stroke-opacity", 0.3);
+          .attr("fill", "#333333")
+          .attr("fill-opacity", 0.5)
+          .attr("stroke", "var(--text-secondary)")
+          .attr("stroke-width", 1).attr("stroke-opacity", 0.45);
       }
     } else {
       // Directory node
       if (isFocused) {
         g.select("rect")
           .attr("width", 8).attr("height", 8).attr("x", -4).attr("y", -4)
-          .attr("fill", d.name === "root" ? "var(--text-muted)" : "var(--border)")
+          .attr("fill", d.name === "root" ? "var(--text-secondary)" : "#444444")
           .attr("fill-opacity", 1)
-          .attr("stroke", "var(--text-muted)").attr("stroke-width", 1).attr("stroke-opacity", 0.4);
+          .attr("stroke", "var(--text-secondary)").attr("stroke-width", 1).attr("stroke-opacity", 0.6);
       } else {
         g.select("rect")
           .attr("width", 6).attr("height", 6).attr("x", -3).attr("y", -3)
-          .attr("fill", "var(--border)")
-          .attr("fill-opacity", 0.4)
-          .attr("stroke", "var(--text-muted)").attr("stroke-width", 1).attr("stroke-opacity", 0.2);
+          .attr("fill", "#333333")
+          .attr("fill-opacity", 0.6)
+          .attr("stroke", "var(--text-secondary)").attr("stroke-width", 1).attr("stroke-opacity", 0.35);
       }
     }
 
@@ -404,7 +425,7 @@ function applyFocusStyling(
           .text(d.name === "root" ? repoName : d.name)
           .attr("x", d.isFile ? sz + 6 : 10)
           .attr("font-size", d.name === "root" ? "12px" : "10px")
-          .attr("fill", d.isFile ? "var(--text-secondary)" : "var(--text-muted)")
+          .attr("fill", d.isFile ? "var(--text-primary)" : "var(--text-secondary)")
           .attr("fill-opacity", 1)
           .attr("font-weight", d.name === "root" ? "600" : "400");
         if (d.isFile) {
@@ -418,8 +439,8 @@ function applyFocusStyling(
           .text(d.name === "root" ? "" : d.name)
           .attr("x", d.isFile ? sz * 0.7 + 5 : 8)
           .attr("font-size", "9px")
-          .attr("fill", "var(--text-muted)")
-          .attr("fill-opacity", 0.6)
+          .attr("fill", "var(--text-secondary)")
+          .attr("fill-opacity", 0.7)
           .attr("font-weight", "400");
         if (d.isFile) {
           diffLabel.attr("opacity", 0);
@@ -447,6 +468,7 @@ export function PrDiagram({
 
   // Store d3 refs for focus updates
   const nodeSelRef = useRef<d3.Selection<SVGGElement, GraphNode, SVGGElement, unknown> | null>(null);
+  const linkSelRef = useRef<d3.Selection<SVGLineElement, GraphLink, SVGGElement, unknown> | null>(null);
   const sizeScaleRef = useRef<d3.ScalePower<number, number> | null>(null);
 
   // Reset when a new PR is selected from the left panel
@@ -494,6 +516,7 @@ export function PrDiagram({
       focusedPrId,
       sizeScaleRef.current,
       focusedPr.repo.split("/")[1],
+      linkSelRef.current ?? undefined,
     );
   }, [focusedPrId, focusedPr]);
 
@@ -538,11 +561,11 @@ export function PrDiagram({
       }));
 
     // Links
-    const link = g.append("g").selectAll("line").data(graph.links).join("line")
-      .attr("stroke", (d) => d.isRelationship ? "var(--text-muted)" : "var(--border)")
+    const link = g.append("g").selectAll<SVGLineElement, GraphLink>("line").data(graph.links).join("line")
       .attr("stroke-width", (d) => d.isRelationship ? 1.5 : 1)
-      .attr("stroke-opacity", (d) => d.isRelationship ? 0.6 : 0.5)
       .attr("stroke-dasharray", (d) => d.isRelationship ? "6,4" : "none");
+
+    linkSelRef.current = link;
 
     // Nodes
     const node = g.append("g").selectAll<SVGGElement, GraphNode>("g").data(graph.nodes).join("g")
@@ -560,13 +583,13 @@ export function PrDiagram({
     // PR Hub nodes
     const hubs = node.filter((d) => d.isPrHub);
     hubs.append("rect").attr("width", 120).attr("height", 32).attr("x", -60).attr("y", -16)
-      .attr("fill", "var(--bg-card)").attr("stroke", "var(--text-muted)").attr("stroke-width", 1).attr("stroke-dasharray", "4,3");
+      .attr("fill", "#1e1e1e").attr("stroke", "var(--text-secondary)").attr("stroke-width", 1).attr("stroke-dasharray", "4,3");
     hubs.append("text").text((d) => `PR #${d.prNumber}`).attr("class", "node-label")
       .attr("text-anchor", "middle").attr("y", -2).attr("font-size", "10px")
-      .attr("font-family", "var(--font-mono), monospace").attr("font-weight", "600").attr("fill", "var(--text-secondary)");
+      .attr("font-family", "var(--font-mono), monospace").attr("font-weight", "600").attr("fill", "var(--text-primary)");
     hubs.append("text").text((d) => { const t = d.prTitle ?? ""; return t.length > 22 ? t.slice(0, 22) + "…" : t; })
       .attr("text-anchor", "middle").attr("y", 11).attr("font-size", "8px")
-      .attr("font-family", "var(--font-mono), monospace").attr("fill", "var(--text-muted)");
+      .attr("font-family", "var(--font-mono), monospace").attr("fill", "var(--text-secondary)");
 
     // All file nodes get a rect (styling applied by applyFocusStyling)
     node.filter((d) => d.isFile).append("rect");
@@ -585,7 +608,7 @@ export function PrDiagram({
     // Apply initial focus styling
     const currentFocus = focusedPrId ?? pr.id;
     const currentFocusedPr = allPullRequests.find((p) => p.id === currentFocus) ?? pr;
-    applyFocusStyling(node, currentFocus, sizeScale, currentFocusedPr.repo.split("/")[1]);
+    applyFocusStyling(node, currentFocus, sizeScale, currentFocusedPr.repo.split("/")[1], link);
 
     svg.on("click", () => { setSelectedNode(null); });
 
