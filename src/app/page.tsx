@@ -3,7 +3,7 @@
 import { useState, useCallback } from "react";
 import { DashboardNav } from "@/components/dashboard-nav";
 import { PrList } from "@/components/pr-list";
-import { PrSequenceSunburst } from "@/components/pr-sequence-sunburst";
+import { PrSequenceIcicle } from "@/components/pr-sequence-icicle";
 import { pullRequests } from "@/data/pull-requests";
 
 export default function Home() {
@@ -25,7 +25,7 @@ export default function Home() {
 
         {/* Right: PR Diagram */}
         <div className="flex-1 overflow-hidden">
-          <PrSequenceSunburst pr={graphPr} />
+          <PrSequenceIcicle pr={graphPr} />
         </div>
       </main>
     </div>
